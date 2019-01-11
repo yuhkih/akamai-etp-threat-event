@@ -17,10 +17,6 @@ import os
 # ----------------------------------------
 # User Preferences
 # ----------------------------------------
-CustomerId = "xxxx"  # Please go "Utilities" -> "Client Connector Tab". You can find your Customer Id on the left.
-if CustomerId == "xxxx":
-    print("Please open this script and set CustomerId to your Customer ID")
-    exit()
 # Output format Settings
 format_json = 0 # (CSV=0, JSON=1)
 duration_days = 7 # request duration in day from now. If 2, it means the last 48 hours.
@@ -48,12 +44,13 @@ def debug_result(response, action):
 # host = akab-jza67c2hm2atagfasfgsafgurr67wf.luna.akamaiapis.net
 # access_token = akab-ape6fgagfayrafa-532hlfdttj2sxxq6
 # client_token = akab-ruu3utadfasrfdn-elmvfqhpi5l6oezf
+# customer_id = 12345  # this is from ETP console
 # ----------------------------------------
 
 # Check if a credential file exists
-credential_file = "./credential.txt"
+credential_file = "./etp_credential.txt"
 if os.path.exists(credential_file):
-    file = open('credential.txt','r')
+    file = open('etp_credential.txt','r')
     lines = file.readlines()
     file.close
 else:
@@ -65,26 +62,26 @@ else:
 for line in lines:
     if line.find("client_secret") >=0:
         client_secret = line[:-1].split(" ")[2]
-        sclient_secret='client_secret=' + client_secret
     if line.find("host") >=0:
         host = line[:-1].split(" ")[2]
-        shost='host=' + host
     if line.find("access_token") >=0:
         access_token = line[:-1].split(" ")[2]
-        saccess_token = "access_token=" + access_token
     if line.find("client_token") >=0:
         client_token = line[:-1].split(" ")[2]
-        sclient_token = "client_token=" + client_token
+    if line.find("customer_id") >=0:
+        customer_id = line[:-1].split(" ")[2]
+
 
 # ----------------------------------------
 # For Debug. Print Credential file 
 # ----------------------------------------
 if DEBUG == 1:
     print("=====  Credential File  ======")
-    print(sclient_secret)
-    print(shost)
-    print(saccess_token)
-    print (sclient_token)
+    print("client_secret =", client_secret)
+    print("host =",host)
+    print("access_token =",access_token)
+    print("client_token =",client_token)
+    print("customer_id =",customer_id)
     print("=============================")
 
 # ----------------------------------------
@@ -137,7 +134,7 @@ print(message)
 # Execute API Request
 # ----------------------------------------
 filters=''  # No Filter
-request_url = baseurl + "/etp-report/v1/configs/" + CustomerId + "/threat-events/details?startTimeSec=" + str(start_e) + '&endTimeSec=' + str(end_e) + '&filters=' + filters
+request_url = baseurl + "/etp-report/v1/configs/" + customer_id + "/threat-events/details?startTimeSec=" + str(start_e) + '&endTimeSec=' + str(end_e) + '&filters=' + filters
 result = s.get(request_url,headers=headers)
 
 # ---------------------------------------- 
@@ -146,6 +143,7 @@ result = s.get(request_url,headers=headers)
 if DEBUG == 1:
     print("HTTP Response Code:" + str(result.status_code))  # status code
     print(result.request.headers)
+    print(request_url)
 
 if format_json :
     print(json.dumps(result.json(),indent=2))
