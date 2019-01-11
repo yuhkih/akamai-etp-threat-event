@@ -3,6 +3,8 @@
 #  Purpose: Sample cord to get threat events from ETP server.
 #  2019/01/08 yuhki initial relase using "Enterprise Threat Protector Reporting API v1"
 #                   verified with Python 3.6.3 and 2.7.14 on Windows 10
+#  2019/01/11 yuhki change display time zone from GMT to Local time (gmtime() → localtime() )
+#                   change the first request duration to the past 7 days. (when there is no timestamp file)
 # ----------------------------------------
 
 import requests
@@ -15,11 +17,26 @@ import os
 # ----------------------------------------
 # User Preferences
 # ----------------------------------------
-CustomerId = "30520"  # Please go "Utilities" -> "Client Connector Tab". You can find your Customer Id on the left.
+CustomerId = "xxxx"  # Please go "Utilities" -> "Client Connector Tab". You can find your Customer Id on the left.
+if CustomerId == "xxxx":
+    print("Please open this script and set CustomerId to your Customer ID")
+    exit()
 # Output format Settings
 format_json = 0 # (CSV=0, JSON=1)
-duration_days = 2 # request duration in day from now. If 2, it means the last 48 hours.
+duration_days = 7 # request duration in day from now. If 2, it means the last 48 hours.
 DEBUG = 0 # 0 or 1(DEBUG)
+
+def debug_result(response, action):
+    print("[DEBUG] ----- Request Header -----")
+    print(response.request.headers)
+    print("[DEBUG] ----- Response Code -----")
+    print(response.status_code)
+    print("[DEBUG] ----- Response Header -----")
+    print(response.headers)
+    if action != 'download':
+        print("[DEBUG] ----- Response Content -----")
+        print(response.text)
+
 
 # ----------------------------------------
 # Open a credential file
@@ -113,7 +130,7 @@ file.write(str(end_e))
 file.close()
 
 # Threat event request duration Message
-message = "[MSG] Querying threat events from " + time.strftime('%Y-%m-%d %H:%M:%S',time.gmtime(start_e)) + " to " +  time.strftime('%Y-%m-%d %H:%M:%S',time.gmtime(end_e))
+message = "[MSG] Querying threat events from " + time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(start_e)) + " to " +  time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(end_e))
 print(message)
 
 # ----------------------------------------
@@ -128,7 +145,7 @@ result = s.get(request_url,headers=headers)
 # ----------------------------------------
 if DEBUG == 1:
     print("HTTP Response Code:" + str(result.status_code))  # status code
-
+    print(result.request.headers)
 
 if format_json :
     print(json.dumps(result.json(),indent=2))
